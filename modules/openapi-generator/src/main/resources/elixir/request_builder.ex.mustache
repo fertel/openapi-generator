@@ -86,8 +86,7 @@ defmodule {{moduleName}}.RequestBuilder do
     |> Map.update!(:body, &(Tesla.Multipart.add_field(&1, key, Poison.encode!(value), headers: [{:"Content-Type", "application/json"}])))
   end
   def add_param(request, :headers, key, value) do
-    request
-    |> Tesla.put_header(key, value)
+    add_header(request, key, value)
   end
   def add_param(request, :file, name, path) do
     request
@@ -137,4 +136,14 @@ defmodule {{moduleName}}.RequestBuilder do
   def resolve_mapping(env, [_ | tail], struct), do: resolve_mapping(env, tail, struct)
   def resolve_mapping(env, [], nil), do: {:error, env}
   def resolve_mapping(env, [], struct), do: decode(env, struct)
+  
+  defp add_header(request = %{headers: headers}, key, value) do 
+    %{request | headers: [{to_string(key), to_string(value)} | headers]}
+  end 
+  
+  defp add_header(request, key, value) do
+    request
+    |> Map.put(:headers, [])
+    |> add_header(key, value)
+  end 
 end
